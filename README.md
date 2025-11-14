@@ -338,38 +338,40 @@ pip install -r requirements.txt
 
 ---
 
-## ⚙️ Federated Dataset Strategies
+## ⚙️ Dataset Generation Strategies
 
-### 🌟 `hybrid/` - **Realistic Multi-Facility Simulation** (Recommended)
-Simulates real-world industrial scenarios with:
-- Moderate facility differences (alpha=0.5)
-- Operating condition variations
-- Sensor quality differences
-- Realistic quantity skew (5%-35% data per facility)
+### 1. Hybrid Strategy (Recommended)
+Combines operating conditions + label imbalance + quantity skew
+- **Use**: Most realistic multi-facility simulation
 
-**→ Use this for realistic federated learning experiments**
+### 2. Clustering Strategy
+Groups data by operating patterns (high/low load, steady/variable)
+- **Use**: Simulate facilities with different pump applications
 
-### `clustering/` - Operating Condition Groups
-Groups by pump behavior patterns (high/low load, steady/variable)
+### 3. Dirichlet Strategy
+Creates controlled label imbalance across clients
+- **Use**: Research on non-IID data handling
 
-### `dirichlet_high/` - Extreme Heterogeneity
-**Very high** label imbalance (alpha=0.1) - **not realistic**  
-**→ Use only for algorithm stress testing**
-
-### `temporal/` - Time-Based Split
-Sequential time periods for seasonal analysis
-
----
-
-## ⚠️ Important Note
-
-**Original Data**: Real pump sensor measurements from industrial operations  
-**Federated Splits**: Synthetically generated from original data to simulate multiple facilities with controlled heterogeneity
-
-The original dataset (`data/sensor.csv`) is real. The client datasets in `federated_data/` are synthetic partitions created by our data generator to enable federated learning research.
-
----
-
+### 4. Temporal Strategy
+Splits data by time periods
+- **Use**: Study seasonal or operational shift effects
+- 
 **SenorMatics** - Enabling Privacy-Preserving Industrial AI
 
 *Data-driven insights, privacy-first approach.*
+
+# Local Training: 
+## 🏋️‍♂️ Federated Training Using 1D Convolutional Autoencoder
+
+We use a **1D Convolutional Autoencoder (CAE)** in a federated learning setup for anomaly detection in pump sensor data. The approach works as follows:  
+
+- Each client (e.g., `sensor_0`, `sensor_1`, `sensor_2`) trains the CAE **locally** on its time-series sensor sequences.  
+- The CAE consists of **1D convolutional layers** to capture temporal patterns and **deconvolutional layers** to reconstruct the input sequence.  
+- The model minimizes **reconstruction error** to learn normal operating behavior.  
+- After local training, each client sends its **model weights to a central aggregator** (server).  
+- The server combines the weights using **federated averaging (`FedAvg`)** to create a **global model**.  
+- The global model can detect abnormal pump behavior (e.g., cavitation, bearing wear, flow irregularities) **without sharing raw data**, enabling **privacy-preserving predictive maintenance** across heterogeneous facilities.
+
+
+---
+
