@@ -79,7 +79,7 @@ def load_and_prepare_data(client_id: int):
     print(f"\nLoading data for Client {client_id}...")
     
     # Load client-specific data
-    df = pd.read_csv(f'../../federated_data/hybrid/client_{client_id}.csv')
+    df = pd.read_csv(rf'..\fl-dist-hack-sensors\federated_data\hybrid\client_{client_id}.csv')
     print(f"  • Dataset size: {len(df):,} samples")
     
     # Select sensor columns (excluding sensor_15 which is empty)
@@ -277,13 +277,15 @@ def main():
     """
     
     # Parse command line arguments
-    if len(sys.argv) < 3:
-        print("Usage: python client.py <client_id> <server_ip>")
-        print("Example: python client.py 0 localhost")
-        sys.exit(1)
+    # if len(sys.argv) < 3:
+    #     print("Usage: python client.py <client_id> <server_ip>")
+    #     print("Example: python client.py 0 localhost")
+    #     sys.exit(1)
     
     client_id = int(sys.argv[1])
-    server_ip = sys.argv[2]
+    # server_ip = sys.argv[2]
+    # client_id = 0
+    server_ip = "172.27.205.217"
     
     print("="*70)
     print(f"FEDERATED LEARNING CLIENT {client_id} - PUMP SENSOR ANOMALY DETECTION")
