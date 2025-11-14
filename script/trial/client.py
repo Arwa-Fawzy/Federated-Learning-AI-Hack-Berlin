@@ -312,8 +312,12 @@ def main():
     print(f"{'='*70}\n")
     
     # Start Flower client (this will block until training is complete)
+    # If server_ip already includes port (e.g., from ngrok), use it as-is
+    # Otherwise, append :8080 for local network
+    server_address = server_ip if ':' in server_ip else f"{server_ip}:8080"
+    
     fl.client.start_numpy_client(
-        server_address=f"{server_ip}:8080",
+        server_address=server_address,
         client=client
     )
     

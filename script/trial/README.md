@@ -36,6 +36,28 @@ Make absolutely sure all three laptops are connected to the same WiFi network. I
 
 It's a good idea to test the connection before running the federated learning scripts. From one of the client laptops, try pinging the server's IP address. On Windows, open Command Prompt and type `ping 192.168.1.100` (replacing with the actual server IP). On Mac or Linux, open Terminal and use the same command. If you see replies coming back, the connection is working. Press Ctrl+C to stop the ping test.
 
+## Remote Setup: If You're NOT on the Same WiFi Network
+
+If the three of you are working from different locations—different homes, different cities, or different networks—you cannot use local IP addresses to connect. In this case, you need to create a tunnel that exposes the server to the internet so clients can reach it from anywhere. The simplest solution is to use ngrok, which creates a secure tunnel to your localhost.
+
+The server person needs to download and install ngrok first. Visit https://ngrok.com and create a free account. Download the ngrok executable for your operating system. On Windows, you'll get a zip file containing ngrok.exe. Extract it to a convenient location. On Mac or Linux, you can install it via package managers or download the binary and make it executable with `chmod +x ngrok`.
+
+Once ngrok is installed, the server person needs to authenticate it with their account token. After signing up on the ngrok website, you'll find your auth token in the dashboard. Run the command `ngrok authtoken <your_token_here>` to link ngrok to your account. This is a one-time setup step.
+
+Now here's how the process works when you're remote. The server person will run two terminal windows simultaneously. In the first terminal, navigate to `script/trial` and start the server as usual with `python server.py 10 2`. The server will start on localhost port 8080. In a second terminal window (keep the first one running), run the command `ngrok tcp 8080`. This tells ngrok to create a public TCP tunnel to your local port 8080.
+
+When ngrok starts, it will display connection information that looks something like this: "Forwarding tcp://2.tcp.ngrok.io:15432 -> localhost:8080". The important part is the public address—in this example, `2.tcp.ngrok.io:15432`. This is what you'll share with the two client people. Every time you restart ngrok, you'll get a different address, so make sure to share the current one.
+
+The two client people can now connect from anywhere in the world using this ngrok address. When they run their client scripts, they'll use the ngrok hostname and port instead of a local IP. For example, Client 0 would run `python client.py 0 2.tcp.ngrok.io` and the script needs a small modification to handle the port. Actually, let me provide you with a modified command that works with ngrok.
+
+Since the ngrok address includes a non-standard port, you need to modify how clients connect. Open the `client.py` file and find the line near the end that says `fl.client.start_numpy_client(server_address=f"{server_ip}:8080", client=client)`. Change it to `fl.client.start_numpy_client(server_address=f"{server_ip}", client=client)` (removing the hardcoded :8080). Then when running the client, include the full ngrok address with port: `python client.py 0 2.tcp.ngrok.io:15432`.
+
+One important limitation of the free ngrok account is that it only allows one simultaneous tunnel and the connection URLs change every time you restart ngrok. If you need more stable connections or multiple tunnels, you'd need to upgrade to a paid plan. However, for this trial with 2 clients connecting to 1 server, the free tier works fine since both clients can connect to the same tunnel.
+
+An alternative to ngrok is Tailscale, which might actually be easier for your scenario. Tailscale creates a virtual private network that makes all your devices appear to be on the same local network, even when they're physically remote. All three of you would install Tailscale, sign in with the same account or join the same network, and then you can use the Tailscale IP addresses just like local IPs. The advantage is that it's more stable and doesn't require running a separate tunnel process. Visit https://tailscale.com to try it if ngrok gives you trouble.
+
+Another simple alternative is for the server person to run the server on a cloud VM like AWS EC2, Google Cloud, or Azure. You'd rent a small virtual machine (costs about five dollars per month), install Python and the dependencies there, copy the code and data to it, and run the server. Then clients connect to the public IP address of the VM. This is the most robust solution for serious federated learning experiments but requires a bit more setup and costs money.
+
 ## Running the Federated Learning Experiment
 
 Now we're ready to start the actual federated learning process. The order of operations is important: the server must start first and be waiting for clients before the clients try to connect. If clients try to connect before the server is ready, they'll get connection errors.
