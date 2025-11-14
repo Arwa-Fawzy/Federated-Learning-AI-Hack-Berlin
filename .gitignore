@@ -1,6 +1,4 @@
-# Data files (too large for GitHub, users can generate these)
-data/
-federated_data/
+# Large image files (users can regenerate these)
 plots/*.png
 
 # Python
