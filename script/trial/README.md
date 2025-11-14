@@ -16,7 +16,7 @@ All three participants should start by cloning the repository to their laptops. 
 
 ## Installing Dependencies
 
-Now that you have the code, you need to install the required Python libraries. These libraries provide the machine learning framework (PyTorch), the federated learning infrastructure (Flower), and data processing utilities (pandas, numpy, scikit-learn). From the project root directory, run the command: `pip install flwr torch pandas numpy scikit-learn`. This installation might take a few minutes as it downloads and installs all the necessary packages. If you encounter any permission errors, try adding the `--user` flag to the command.
+Now that you have the code, you need to install the required Python libraries. These libraries provide the machine learning framework (PyTorch), the federated learning infrastructure (Flower), and data processing utilities (pandas, numpy, scikit-learn). From the project root directory, run the command: `pip install -r requirements.txt`. This installation might take a few minutes as it downloads and installs all the necessary packages. If you encounter any permission errors, try adding the `--user` flag to the command.
 
 Once the installation completes, you can verify it worked by trying to import the libraries in Python. Open a Python interpreter by typing `python` in your terminal, then try running `import flwr`, `import torch`, and `import pandas`. If none of these commands produce errors, you're ready to proceed. Type `exit()` to close the Python interpreter.
 
