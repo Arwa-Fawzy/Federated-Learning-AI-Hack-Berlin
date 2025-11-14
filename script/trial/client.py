@@ -308,12 +308,11 @@ def main():
     client = PumpSensorClient(client_id, model, train_loader, test_loader, device)
     
     print(f"\n{'='*70}")
-    print(f"Client {client_id} ready. Connecting to server at {server_ip}:8080...")
+    print(f"Client {client_id} ready. Connecting to server at {server_ip}...")
     print(f"{'='*70}\n")
     
     # Start Flower client (this will block until training is complete)
-    # If server_ip already includes port (e.g., from ngrok), use it as-is
-    # Otherwise, append :8080 for local network
+    # Append port 8080 if not already included in server_ip
     server_address = server_ip if ':' in server_ip else f"{server_ip}:8080"
     
     fl.client.start_numpy_client(
