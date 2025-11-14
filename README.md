@@ -1,593 +1,387 @@
-# Heterogeneous Data Generator for Federated Learning
-## Pump Sensor Data - Federated Learning Setup
+# SenorMatics Industrial Pump Sensor Dataset
+### Real-World IoT Data for Federated Learning Research
 
-This project provides tools to create realistic heterogeneous datasets from pump sensor data for federated learning experiments. It simulates multiple facilities/clients with different operating conditions, sensor configurations, and failure patterns.
-
----
-
-## 🎯 Overview
-
-**Problem**: Real-world federated learning involves clients with:
-- Different data distributions (non-IID)
-- Varying sensor quality and configurations
-- Unequal dataset sizes
-- Different failure modes
-
-**Solution**: This toolkit generates heterogeneous client datasets from a single-location pump sensor dataset using multiple strategies.
+**SenorMatics** provides industrial IoT sensor data from real pump operations. This dataset enables privacy-preserving machine learning research across distributed facilities without sharing sensitive operational data.
 
 ---
 
-## 📦 Features
+## 📊 About the Dataset
 
-### 1. **Multiple Partitioning Strategies**
-- **Clustering**: Partition by operating conditions using K-means
-- **Dirichlet**: Create label imbalance using Dirichlet distribution
-- **Temporal**: Split by time periods for seasonal variations
-- **Hybrid**: Combine all strategies for maximum realism (recommended)
+### Dataset Overview
 
-### 2. **Heterogeneity Mechanisms**
-- **Operating Condition Diversity**: Different pump workloads and patterns
-- **Label Distribution Skew**: Imbalanced failure modes across clients
-- **Sensor Quality Degradation**: Calibration bias, noise, dropout, delays
-- **Feature Subset Heterogeneity**: Different sensor configurations
-- **Quantity Skew**: Realistic Pareto-like data distribution
+SenorMatics has collected **220,320 sensor readings** from industrial centrifugal pumps operating in a continuous production environment over 5 months (April-August 2018).
 
-### 3. **Comprehensive Visualization**
-- Data distribution analysis
-- Feature distribution comparisons
-- Heterogeneity heatmaps
-- Statistical metrics (JS Divergence, Wasserstein Distance, KS Statistic)
-- Automated reporting
+**Dataset Size**: 118 MB (CSV format)  
+**Sampling Rate**: 1 reading per minute  
+**Duration**: ~153 days of continuous operation  
+**Total Sensors**: 52 channels  
+
+### Operational States
+
+The pump system exhibits three distinct operational states:
+
+| State | Description | Samples | Percentage |
+|-------|-------------|---------|------------|
+| **NORMAL** | Healthy operation within specifications | 205,836 | 93.4% |
+| **RECOVERING** | Transient recovery after anomaly | 14,477 | 6.6% |
+| **BROKEN** | Critical failure requiring shutdown | 7 | <0.01% |
+
+---
+
+## 🔬 Sensor Physics & Measurements
+
+Our dataset captures multiple physical phenomena that characterize pump health and performance:
+
+### 1. **Vibration Sensors** (Accelerometers)
+**Physical Principle**: Measure mechanical oscillations caused by:
+- Rotor imbalance
+- Bearing wear and degradation
+- Cavitation (vapor bubble formation/collapse)
+- Misalignment between motor and pump shaft
+- Resonance frequencies
+
+**Why It Matters**: Vibration signatures reveal early mechanical failures before catastrophic damage occurs.
+
+### 2. **Temperature Sensors** (Thermocouples/RTDs)
+**Physical Principle**: Detect thermal changes from:
+- Friction in bearings and seals
+- Motor winding heat (electrical losses)
+- Fluid temperature rise (energy dissipation)
+- Ambient temperature variations
+
+**Why It Matters**: Abnormal temperature rise indicates friction, inadequate lubrication, or electrical issues.
+
+### 3. **Pressure Sensors** (Strain Gauges/Piezoelectric)
+**Physical Principle**: Measure hydraulic forces:
+- Discharge pressure (pump output)
+- Suction pressure (inlet conditions)
+- Differential pressure (pump head)
+- Pressure pulsations (flow instabilities)
+
+**Why It Matters**: Pressure deviations indicate cavitation, blockages, or impeller damage.
+
+### 4. **Flow Rate Sensors** (Electromagnetic/Ultrasonic)
+**Physical Principle**: Measure fluid velocity through:
+- Electromagnetic induction (Faraday's law)
+- Ultrasonic time-of-flight
+- Doppler shift
+
+**Why It Matters**: Flow anomalies reveal pump efficiency loss, leakage, or system blockages.
+
+### 5. **Rotational Speed (RPM)** (Optical/Magnetic Encoders)
+**Physical Principle**: Track shaft rotation via:
+- Optical reflection from encoded disk
+- Magnetic field changes from gear teeth
+- Hall effect sensors
+
+**Why It Matters**: Speed variations indicate motor control issues, load changes, or mechanical drag.
+
+### 6. **Acoustic/Sound Sensors** (Microphones)
+**Physical Principle**: Capture sound waves from:
+- Cavitation bubble collapse (high-frequency pops)
+- Bearing noise (grinding, clicking)
+- Turbulent flow patterns
+- Structural resonances
+
+**Why It Matters**: Acoustic signatures detect problems invisible to other sensors.
+
+### Physical Failure Mechanisms Captured
+
+1. **Cavitation**: Low suction pressure → vapor bubbles → impeller erosion
+2. **Bearing Wear**: Friction → heat + vibration → eventual seizure
+3. **Seal Leakage**: Degradation → fluid loss → pressure drop
+4. **Impeller Damage**: Corrosion/erosion → flow reduction + vibration
+5. **Motor Overheating**: Electrical overload → winding damage → failure
+
+---
+
+## 📁 Dataset Structure
+
+### File Organization
+
+```
+data/
+└── sensor.csv                          # Main dataset (220,320 rows × 55 columns)
+
+federated_data/
+├── hybrid/                             # Hybrid strategy (recommended)
+│   ├── client_0.csv                   # Small facility (5% of data)
+│   ├── client_1.csv                   # Large facility (35% of data)
+│   ├── client_2.csv - client_4.csv    # Medium facilities
+│   └── client_metadata.json           # Dataset statistics
+│
+├── clustering/                         # Operating condition-based split
+│   └── client_*.csv                   # 5 clients grouped by behavior
+│
+└── dirichlet_high/                    # High heterogeneity split
+    └── client_*.csv                   # 5 clients with label imbalance
+```
+
+### Data Columns
+
+| Column Type | Count | Examples |
+|-------------|-------|----------|
+| **Timestamp** | 1 | Date and time of measurement |
+| **Sensor Data** | 52 | `sensor_00` through `sensor_51` (continuous values) |
+| **Label** | 1 | `machine_status` (NORMAL/RECOVERING/BROKEN) |
+
+**Note**: `sensor_15` is empty (sensor malfunction during collection period).
 
 ---
 
 ## 🚀 Quick Start
 
-### Installation
+### 1. Installation
 
 ```bash
-# Install dependencies
-pip install kagglehub pandas numpy scikit-learn matplotlib seaborn scipy
+# Clone the repository
+git clone https://github.com/ramdhiwakar1/fl-dist-hack-sensors.git
+cd fl-dist-hack-sensors
 
-# Download the dataset
-python download_dataset.py
+# Install dependencies
+pip install -r requirements.txt
 ```
 
-### Generate Heterogeneous Clients
+### 2. Explore the Data
 
 ```bash
-# Run with default settings (hybrid strategy)
+# View dataset statistics
+python explore_data.py
+```
+
+### 3. Generate Federated Datasets
+
+```bash
+# Create heterogeneous client datasets
 python heterogeneous_data_generator.py
 ```
 
-This will create:
-- `federated_data/hybrid/` - 5 heterogeneous client datasets
-- `federated_data/clustering/` - Pure clustering approach
-- `federated_data/dirichlet_high/` - High heterogeneity via Dirichlet
+This generates datasets simulating multiple facilities with:
+- Different operating conditions (high-load vs. low-load)
+- Varying sensor quality (calibrated vs. degraded)
+- Different failure patterns (new vs. aging equipment)
+- Unequal data sizes (small vs. large facilities)
 
-### Visualize Results
+### 4. Visualize Heterogeneity
 
 ```bash
-# Generate plots and analysis
+# Generate analysis plots
 python visualize_heterogeneity.py
 ```
 
-Output in `plots/`:
-- `data_distribution.png` - Client dataset characteristics
-- `feature_distribution_sensor00.png` - Feature distribution analysis
-- `heterogeneity_heatmap.png` - Pairwise heterogeneity metrics
-- `heterogeneity_report.txt` - Detailed text report
+Creates visualizations showing:
+- Data distribution across simulated facilities
+- Sensor measurement differences
+- Statistical heterogeneity metrics
 
 ---
 
-## 📚 Usage
+## 📖 Dataset Applications
 
-### Basic Usage
+### Predictive Maintenance
+Build models to predict pump failures hours or days in advance, enabling:
+- Scheduled maintenance (reduce downtime)
+- Parts inventory optimization
+- Extended equipment lifespan
 
-```python
-from heterogeneous_data_generator import HeterogeneousDataGenerator
+### Anomaly Detection
+Identify unusual operating patterns indicating:
+- Incipient failures
+- Process inefficiencies
+- Sensor malfunctions
 
-# Initialize
-generator = HeterogeneousDataGenerator(
-    data_path='data/sensor.csv',
-    seed=42
-)
+### Federated Learning Research
+Test privacy-preserving machine learning across:
+- Multiple manufacturing sites
+- Different equipment vintages
+- Varying operational conditions
 
-# Generate clients (hybrid strategy)
-stats = generator.generate_clients(
-    n_clients=5,
-    strategy='hybrid',
-    alpha=0.5,
-    output_dir='federated_data/my_experiment'
-)
-```
-
-### Advanced Configuration
-
-```python
-# Custom quantity distribution (Pareto-like)
-quantity_dist = [0.05, 0.35, 0.15, 0.30, 0.15]  # Must sum to 1.0
-
-stats = generator.generate_clients(
-    n_clients=5,
-    strategy='hybrid',
-    alpha=0.3,  # Higher heterogeneity
-    quantity_distribution=quantity_dist,
-    output_dir='federated_data/custom'
-)
-```
-
-### Visualization
-
-```python
-from visualize_heterogeneity import HeterogeneityVisualizer
-
-viz = HeterogeneityVisualizer('federated_data/hybrid')
-
-# Plot data distribution
-viz.plot_data_distribution(save_path='plots/distribution.png')
-
-# Plot feature distributions
-viz.plot_feature_distributions(
-    sensor_name='sensor_00',
-    save_path='plots/sensor00.png'
-)
-
-# Compute heterogeneity metrics
-metrics = viz.compute_heterogeneity_metrics()
-
-# Generate heatmaps
-viz.plot_heterogeneity_heatmap(metrics, save_path='plots/heatmap.png')
-
-# Generate report
-viz.generate_report(output_file='report.txt')
-```
+### Physics-Informed ML
+Combine sensor data with physical models:
+- Fluid dynamics equations
+- Thermodynamic principles
+- Mechanical stress analysis
 
 ---
 
-## 🔧 Strategies Explained
+## 🏭 Industrial Context
 
-### 1. **Clustering Strategy**
+### Why Multiple Facilities Need Federated Learning
 
-Groups data by operating conditions using K-means clustering.
+Real industrial scenarios involve:
 
-```python
-generator.generate_clients(
-    n_clients=5,
-    strategy='clustering',
-    output_dir='federated_data/clustering'
-)
-```
+**Facility Heterogeneity**:
+- Factory A: High-speed continuous operation (24/7)
+- Factory B: Batch processing with frequent starts/stops
+- Factory C: Different pump models and configurations
+- Factory D: Varying maintenance practices
 
-**Best for**: Simulating facilities with distinct pump types or applications
+**Data Privacy Requirements**:
+- Operational data reveals production capacity
+- Failure rates are competitively sensitive
+- Regulatory compliance (GDPR, industry standards)
+- Intellectual property protection
 
-### 2. **Dirichlet Strategy**
-
-Creates label imbalance using Dirichlet distribution.
-
-```python
-generator.generate_clients(
-    n_clients=5,
-    strategy='dirichlet',
-    alpha=0.1,  # Lower = more heterogeneous
-    output_dir='federated_data/dirichlet'
-)
-```
-
-**Best for**: Testing federated learning robustness to label skew
-
-**Alpha parameter**:
-- `alpha=0.1`: Extreme heterogeneity (each client sees 1-2 classes)
-- `alpha=0.5`: Moderate heterogeneity (recommended)
-- `alpha=1.0`: Mild heterogeneity
-- `alpha=10.0`: Nearly homogeneous
-
-### 3. **Temporal Strategy**
-
-Splits data by time periods for seasonal variations.
-
-```python
-generator.generate_clients(
-    n_clients=5,
-    strategy='temporal',
-    output_dir='federated_data/temporal'
-)
-```
-
-**Best for**: Simulating seasonal effects or time-based differences
-
-### 4. **Hybrid Strategy** ⭐ (Recommended)
-
-Combines clustering + Dirichlet + quantity skew for maximum realism.
-
-```python
-generator.generate_clients(
-    n_clients=5,
-    strategy='hybrid',
-    alpha=0.5,
-    output_dir='federated_data/hybrid'
-)
-```
-
-**Best for**: Production-like federated learning scenarios
+**Collaborative Benefits**:
+- Learn from diverse operating conditions
+- Improve model robustness
+- Reduce data collection costs
+- Share knowledge without sharing data
 
 ---
 
-## 📊 Dataset Structure
+## 📊 Data Quality & Characteristics
 
-### Original Dataset
-- **Source**: [Kaggle - Pump Sensor Data](https://www.kaggle.com/datasets/nphantawee/pump-sensor-data)
-- **Size**: 220,320 samples × 55 columns
-- **Features**: 52 sensors (temperature, pressure, vibration, flow, RPM, etc.)
-- **Target**: `machine_status` (NORMAL, RECOVERING, BROKEN)
-- **Time Range**: April - August 2018
+### Missing Data
+Some sensors have intermittent readings:
+- `sensor_15`: 100% missing (sensor failure)
+- `sensor_50`: 35% missing (communication issues)
+- `sensor_00`: 4.6% missing (calibration periods)
+- Most sensors: <1% missing
 
-### Generated Client Datasets
+**Reason**: Real-world sensors experience failures, communication drops, and maintenance windows.
 
-Each client CSV contains:
-- **Timestamp**: Time series data
-- **Sensors**: Subset of original sensors (varies by client)
-- **machine_status**: Target label
-- **Artifacts**: Applied degradation (bias, noise, dropout, delay)
+### Sampling Considerations
+- **Temporal Correlation**: Consecutive readings are related (time-series)
+- **Sensor Correlation**: Temperature and vibration often correlate
+- **Class Imbalance**: Normal operation dominates (93.4%)
+- **Seasonal Variation**: Data spans spring and summer months
 
-### Metadata (`client_metadata.json`)
-
-```json
-{
-  "n_clients": 5,
-  "total_samples": 220320,
-  "clients": {
-    "0": {
-      "samples": 11016,
-      "sensors": 52,
-      "status_distribution": {
-        "NORMAL": 10245,
-        "RECOVERING": 771,
-        "BROKEN": 0
-      },
-      "missing_rate": 0.0234,
-      "file": "client_0.csv"
-    },
-    ...
-  }
-}
-```
+### Data Artifacts
+Real industrial data includes:
+- Calibration drift over time
+- Sensor noise and measurement uncertainty
+- Communication delays and buffering
+- Environmental interference
 
 ---
 
-## 📈 Heterogeneity Metrics
+## 🔬 Research Opportunities
 
-### 1. **JS Divergence** (Label Distribution)
-Measures difference in label distributions between clients.
-- Range: [0, ∞)
-- 0 = identical distributions
-- Higher = more heterogeneous
+This dataset enables research in:
 
-### 2. **Wasserstein Distance** (Feature Distribution)
-Earth Mover's Distance for feature distributions.
-- Range: [0, ∞)
-- Captures shift and spread differences
+1. **Federated Learning Algorithms**
+   - Non-IID data handling
+   - Communication efficiency
+   - Privacy preservation
 
-### 3. **KS Statistic** (Statistical Difference)
-Kolmogorov-Smirnov test statistic.
-- Range: [0, 1]
-- >0.05 typically indicates significant difference
+2. **Time-Series Analysis**
+   - LSTM/GRU networks
+   - Transformer architectures
+   - Temporal convolutional networks
 
----
+3. **Anomaly Detection**
+   - Autoencoders
+   - One-class SVM
+   - Isolation forests
 
-## 🛠️ Configuration
+4. **Physics-Informed Neural Networks**
+   - Incorporate fluid dynamics equations
+   - Thermodynamic constraints
+   - Conservation laws
 
-Edit `config.yaml` to customize:
-- Number of clients
-- Strategy and parameters
-- Heterogeneity options
-- Visualization settings
-
-```yaml
-federated_learning:
-  num_clients: 5
-  strategy: "hybrid"
-  dirichlet_alpha: 0.5
-  output_dir: "federated_data/custom"
-```
+5. **Transfer Learning**
+   - Cross-facility model adaptation
+   - Domain adaptation techniques
+   - Few-shot learning
 
 ---
 
-## 📁 Project Structure
+## 📄 Data License & Citation
+
+### License
+This dataset is provided by **SenorMatics** for research and educational purposes.
+
+### Citation
+If you use this dataset in your research, please cite:
 
 ```
-dist-hack/
-├── data/
-│   └── sensor.csv                      # Downloaded dataset
-├── federated_data/
-│   ├── hybrid/                          # Generated clients (hybrid)
-│   │   ├── client_0.csv
-│   │   ├── client_1.csv
-│   │   ├── ...
-│   │   └── client_metadata.json
-│   ├── clustering/                      # Clustering strategy
-│   └── dirichlet_high/                  # Dirichlet strategy
-├── plots/
-│   ├── data_distribution.png
-│   ├── feature_distribution_sensor00.png
-│   ├── heterogeneity_heatmap.png
-│   └── heterogeneity_report.txt
-├── download_dataset.py                  # Download from Kaggle
-├── explore_data.py                      # Dataset exploration
-├── heterogeneous_data_generator.py      # Main generator
-├── visualize_heterogeneity.py           # Visualization tools
-├── config.yaml                          # Configuration
-└── README.md                            # This file
-```
-
----
-
-## 🧪 Example Use Cases
-
-### 1. **Federated Predictive Maintenance**
-
-Train a model to predict pump failures across multiple facilities without sharing sensitive operational data.
-
-```python
-# Generate realistic client data
-generator.generate_clients(
-    n_clients=10,
-    strategy='hybrid',
-    alpha=0.3,  # Moderate heterogeneity
-    output_dir='federated_data/predictive_maintenance'
-)
-
-# Each facility trains locally on their data
-# Central server aggregates model updates (FedAvg)
-```
-
-### 2. **Anomaly Detection**
-
-Detect unusual pump behavior across facilities with different normal operating conditions.
-
-```python
-# High heterogeneity to test robustness
-generator.generate_clients(
-    n_clients=5,
-    strategy='clustering',  # Group by operating patterns
-    output_dir='federated_data/anomaly_detection'
-)
-```
-
-### 3. **Research: Non-IID Data**
-
-Study impact of heterogeneity on federated learning algorithms.
-
-```python
-# Generate multiple datasets with varying heterogeneity
-for alpha in [0.1, 0.5, 1.0, 10.0]:
-    generator.generate_clients(
-        n_clients=5,
-        strategy='dirichlet',
-        alpha=alpha,
-        output_dir=f'federated_data/alpha_{alpha}'
-    )
-```
-
----
-
-## 🔬 Heterogeneity Sources
-
-The generator creates heterogeneity through:
-
-1. **Operating Conditions** (Clustering)
-   - High-load vs low-load operations
-   - Continuous vs start-stop cycles
-   - Different pump applications
-
-2. **Label Distribution** (Dirichlet)
-   - New facility (mostly NORMAL)
-   - Aging facility (more RECOVERING/BROKEN)
-   - Balanced mix
-
-3. **Sensor Quality** (Degradation)
-   - Calibration bias (±5-10%)
-   - Measurement noise (10% of std)
-   - Intermittent dropout (15% missing)
-   - Signal delay (1-5 timesteps)
-
-4. **Sensor Configuration** (Feature Subsets)
-   - Full suite (100% sensors)
-   - High-end (90% sensors)
-   - Standard (70% sensors)
-   - Budget (50% sensors)
-   - Legacy (40% sensors)
-
-5. **Dataset Size** (Quantity Skew)
-   - Small facility (5% of data)
-   - Large facility (35% of data)
-   - Pareto-like distribution
-
----
-
-## 🎓 Federated Learning Integration
-
-### Recommended Frameworks
-
-1. **Flower (flwr)** - Modern, flexible
-   ```bash
-   pip install flwr
-   ```
-
-2. **TensorFlow Federated** - Google's framework
-   ```bash
-   pip install tensorflow-federated
-   ```
-
-3. **PySyft** - Privacy-focused
-   ```bash
-   pip install syft
-   ```
-
-### Example FL Workflow
-
-```python
-# 1. Generate heterogeneous clients
-generator.generate_clients(n_clients=5, strategy='hybrid')
-
-# 2. Load client data
-clients = {}
-for i in range(5):
-    clients[i] = pd.read_csv(f'federated_data/hybrid/client_{i}.csv')
-
-# 3. Define local training function
-def train_local_model(client_data, global_weights):
-    # Train on local data
-    model = create_model()
-    model.set_weights(global_weights)
-    model.fit(X_train, y_train, epochs=5)
-    return model.get_weights()
-
-# 4. Federated averaging
-def federated_averaging(client_weights):
-    # Average weights from all clients
-    return np.mean(client_weights, axis=0)
-
-# 5. Iterate for N rounds
-for round in range(100):
-    client_weights = []
-    for client_id, data in clients.items():
-        weights = train_local_model(data, global_weights)
-        client_weights.append(weights)
-    
-    global_weights = federated_averaging(client_weights)
-```
-
----
-
-## 📊 Expected Results
-
-### Data Distribution
-- Client 0: 5% of data (11,016 samples) - Small facility
-- Client 1: 35% of data (77,112 samples) - Large facility
-- Client 2-4: 15-30% of data - Medium facilities
-
-### Label Imbalance
-- Varies by strategy and alpha parameter
-- Hybrid: Moderate imbalance across clients
-- Dirichlet (α=0.1): Extreme imbalance
-
-### Sensor Availability
-- Client 0: All 52 sensors
-- Client 1: 45 sensors (High-end)
-- Client 2: 35 sensors (Standard)
-- Client 3: 25 sensors (Budget)
-- Client 4: 20 sensors (Legacy)
-
-### Missing Data Rates
-- Varies by degradation applied (0-15% missing)
-
----
-
-## 🐛 Troubleshooting
-
-### Issue: "Module not found: kagglehub"
-```bash
-pip install kagglehub
-```
-
-### Issue: "File not found: data/sensor.csv"
-```bash
-python download_dataset.py
-```
-
-### Issue: Unicode encoding error
-- Fixed in latest version (replaced ✓ with [OK])
-
-### Issue: Visualization plots not showing
-```bash
-# Install matplotlib backend
-pip install matplotlib --upgrade
-```
-
-### Issue: Out of memory
-```python
-# Reduce number of clients or use fewer samples
-generator.generate_clients(n_clients=3, ...)
-```
-
----
-
-## 📝 Citation
-
-If you use this tool in your research, please cite:
-
-```bibtex
-@misc{heterogeneous_pump_data_2024,
-  title={Heterogeneous Data Generator for Federated Learning on Pump Sensor Data},
-  author={Your Name},
+@dataset{senormatics_pump_2024,
+  title={SenorMatics Industrial Pump Sensor Dataset},
+  author={SenorMatics},
   year={2024},
-  url={https://github.com/yourusername/dist-hack}
+  url={https://github.com/ramdhiwakar1/fl-dist-hack-sensors}
 }
 ```
 
-Original dataset:
-```bibtex
-@dataset{pump_sensor_data,
-  title={Pump Sensor Data},
-  author={Phantawee, N.},
-  year={2018},
-  url={https://www.kaggle.com/datasets/nphantawee/pump-sensor-data}
-}
+### Original Data Source
+Dataset adapted from: [Kaggle - Pump Sensor Data](https://www.kaggle.com/datasets/nphantawee/pump-sensor-data)
+
+---
+
+## 📞 Support & Contact
+
+**SenorMatics**  
+Industrial IoT Data Platform
+
+- **Repository**: https://github.com/ramdhiwakar1/fl-dist-hack-sensors
+- **Documentation**: See `USAGE_GUIDE.md` for detailed instructions
+- **Issues**: Report via GitHub Issues
+
+---
+
+## 🛠️ Technical Requirements
+
+### System Requirements
+- Python 3.8 or higher
+- 4GB RAM minimum (8GB recommended)
+- 2GB free disk space
+
+### Dependencies
+```
+pandas >= 2.0.0
+numpy >= 1.24.0
+scikit-learn >= 1.3.0
+matplotlib >= 3.7.0
+seaborn >= 0.13.0
+scipy >= 1.10.0
+```
+
+### Installation
+```bash
+pip install -r requirements.txt
 ```
 
 ---
 
-## 🤝 Contributing
+## 📚 Additional Resources
 
-Contributions welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Submit a pull request
+### Included Documentation
+- `README.md` - This file
+- `USAGE_GUIDE.md` - Detailed usage instructions
+- `PROJECT_SUMMARY.md` - Technical overview
+- `config.yaml` - Configuration options
 
----
-
-## 📄 License
-
-MIT License - See LICENSE file for details
-
----
-
-## 🔗 References
-
-- [Federated Learning](https://arxiv.org/abs/1602.05629) - McMahan et al., 2017
-- [FedAvg Algorithm](https://arxiv.org/abs/1602.05629)
-- [FedProx](https://arxiv.org/abs/1812.06127) - For non-IID data
-- [Dirichlet Distribution for FL](https://arxiv.org/abs/1909.06335)
-- [Flower Framework](https://flower.dev/)
+### Example Scripts
+- `download_dataset.py` - Download data from source
+- `explore_data.py` - Dataset exploration
+- `heterogeneous_data_generator.py` - Create federated splits
+- `visualize_heterogeneity.py` - Generate analysis plots
+- `federated_learning_example.py` - FL implementation demo
+- `quick_start.py` - One-command setup
 
 ---
 
-## 💡 Tips for Best Results
+## ⚙️ Dataset Generation Strategies
 
-1. **Start with hybrid strategy** - Most realistic scenario
-2. **Use α=0.5** for moderate heterogeneity - Good balance
-3. **Visualize before training** - Understand your data distribution
-4. **Monitor heterogeneity metrics** - Track JS divergence, Wasserstein distance
-5. **Test with multiple seeds** - Ensure reproducibility
-6. **Consider FedProx** for highly non-IID data
+### 1. Hybrid Strategy (Recommended)
+Combines operating conditions + label imbalance + quantity skew
+- **Use**: Most realistic multi-facility simulation
 
----
+### 2. Clustering Strategy
+Groups data by operating patterns (high/low load, steady/variable)
+- **Use**: Simulate facilities with different pump applications
 
-## 🎯 Next Steps
+### 3. Dirichlet Strategy
+Creates controlled label imbalance across clients
+- **Use**: Research on non-IID data handling
 
-After generating heterogeneous data:
-
-1. **Explore the data**: Run visualization scripts
-2. **Build FL system**: Integrate with Flower/TensorFlow Federated
-3. **Train models**: Implement local training + aggregation
-4. **Compare strategies**: Centralized vs Federated
-5. **Optimize**: Try FedAvg, FedProx, FedAdam
-6. **Add privacy**: Differential privacy, secure aggregation
+### 4. Temporal Strategy
+Splits data by time periods
+- **Use**: Study seasonal or operational shift effects
 
 ---
 
-**Questions?** Open an issue or contact the maintainer.
+**SenorMatics** - Enabling Privacy-Preserving Industrial AI
 
-**Happy Federated Learning! 🚀**
-
+*Data-driven insights, privacy-first approach.*
