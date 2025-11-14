@@ -338,23 +338,35 @@ pip install -r requirements.txt
 
 ---
 
-## ⚙️ Dataset Generation Strategies
+## ⚙️ Federated Dataset Strategies
 
-### 1. Hybrid Strategy (Recommended)
-Combines operating conditions + label imbalance + quantity skew
-- **Use**: Most realistic multi-facility simulation
+### 🌟 `hybrid/` - **Realistic Multi-Facility Simulation** (Recommended)
+Simulates real-world industrial scenarios with:
+- Moderate facility differences (alpha=0.5)
+- Operating condition variations
+- Sensor quality differences
+- Realistic quantity skew (5%-35% data per facility)
 
-### 2. Clustering Strategy
-Groups data by operating patterns (high/low load, steady/variable)
-- **Use**: Simulate facilities with different pump applications
+**→ Use this for realistic federated learning experiments**
 
-### 3. Dirichlet Strategy
-Creates controlled label imbalance across clients
-- **Use**: Research on non-IID data handling
+### `clustering/` - Operating Condition Groups
+Groups by pump behavior patterns (high/low load, steady/variable)
 
-### 4. Temporal Strategy
-Splits data by time periods
-- **Use**: Study seasonal or operational shift effects
+### `dirichlet_high/` - Extreme Heterogeneity
+**Very high** label imbalance (alpha=0.1) - **not realistic**  
+**→ Use only for algorithm stress testing**
+
+### `temporal/` - Time-Based Split
+Sequential time periods for seasonal analysis
+
+---
+
+## ⚠️ Important Note
+
+**Original Data**: Real pump sensor measurements from industrial operations  
+**Federated Splits**: Synthetically generated from original data to simulate multiple facilities with controlled heterogeneity
+
+The original dataset (`data/sensor.csv`) is real. The client datasets in `federated_data/` are synthetic partitions created by our data generator to enable federated learning research.
 
 ---
 
