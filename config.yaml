@@ -1,0 +1,99 @@
+# Configuration file for Heterogeneous Data Generator
+# Federated Learning on Pump Sensor Data
+
+# Dataset settings
+dataset:
+  path: "data/sensor.csv"
+  kaggle_dataset: "nphantawee/pump-sensor-data"
+
+# Client generation settings
+federated_learning:
+  num_clients: 5
+  random_seed: 42
+  
+  # Strategy: 'clustering', 'dirichlet', 'temporal', 'hybrid'
+  strategy: "hybrid"
+  
+  # Dirichlet concentration parameter (lower = more heterogeneous)
+  # alpha = 0.1: Highly non-IID (extreme heterogeneity)
+  # alpha = 0.5: Moderate non-IID (recommended)
+  # alpha = 1.0: Slightly non-IID
+  # alpha = 10.0: Nearly IID
+  dirichlet_alpha: 0.5
+  
+  # Custom quantity distribution per client (must sum to ~1.0)
+  # null = use default Pareto-like distribution
+  quantity_distribution: null
+  # Example: [0.05, 0.35, 0.15, 0.30, 0.15]
+  
+  # Output directory
+  output_dir: "federated_data/custom"
+
+# Heterogeneity options
+heterogeneity:
+  # Apply sensor degradation
+  apply_sensor_degradation: true
+  
+  # Apply feature subset heterogeneity
+  apply_feature_subsets: true
+  
+  # Degradation types
+  degradation:
+    - type: "bias"           # Calibration bias
+      magnitude: 0.10        # ±10% bias
+    - type: "noise"          # Measurement noise
+      magnitude: 0.10        # 10% of std
+    - type: "dropout"        # Intermittent missing values
+      rate: 0.15             # 15% dropout
+    - type: "delay"          # Signal delay
+      steps: [1, 5]          # 1-5 timesteps
+    - type: "none"           # Pristine data
+
+  # Feature subset configurations
+  feature_subsets:
+    - name: "Full Sensor Suite"
+      keep_ratio: 1.0
+    - name: "High-End Facility"
+      keep_ratio: 0.9
+    - name: "Standard Setup"
+      keep_ratio: 0.7
+    - name: "Budget Configuration"
+      keep_ratio: 0.5
+    - name: "Legacy System"
+      keep_ratio: 0.4
+
+# Visualization settings
+visualization:
+  enable: true
+  output_dir: "plots"
+  sensors_to_plot:
+    - "sensor_00"
+    - "sensor_01"
+    - "sensor_10"
+  
+  # DPI for saved plots
+  dpi: 300
+  
+  # Figure sizes
+  fig_size:
+    distribution: [15, 10]
+    features: [18, 10]
+    heatmap: [18, 5]
+
+# Advanced options
+advanced:
+  # Number of sensors to use for clustering
+  clustering_sensors: 20
+  
+  # K-means settings
+  kmeans:
+    n_init: 10
+    max_iter: 300
+    
+  # Number of clusters for hybrid strategy (relative to n_clients)
+  hybrid_cluster_multiplier: 2
+  
+  # Metrics computation
+  metrics:
+    sample_sensors: 10  # Number of sensors to sample for Wasserstein/KS tests
+
