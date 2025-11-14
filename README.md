@@ -287,38 +287,14 @@ This dataset enables research in:
 
 ---
 
-## 📄 Data License & Citation
+## 📄 Data License
 
 ### License
-This dataset is provided by **SenorMatics** for research and educational purposes.
+This dataset is a synthetic dataset for research and educational purposes.
 
-### Citation
-If you use this dataset in your research, please cite:
-
-```
-@dataset{senormatics_pump_2024,
-  title={SenorMatics Industrial Pump Sensor Dataset},
-  author={SenorMatics},
-  year={2024},
-  url={https://github.com/ramdhiwakar1/fl-dist-hack-sensors}
-}
-```
 
 ### Original Data Source
 Dataset adapted from: [Kaggle - Pump Sensor Data](https://www.kaggle.com/datasets/nphantawee/pump-sensor-data)
-
----
-
-## 📞 Support & Contact
-
-**SenorMatics**  
-Industrial IoT Data Platform
-
-- **Repository**: https://github.com/ramdhiwakar1/fl-dist-hack-sensors
-- **Documentation**: See `USAGE_GUIDE.md` for detailed instructions
-- **Issues**: Report via GitHub Issues
-
----
 
 ## 🛠️ Technical Requirements
 
