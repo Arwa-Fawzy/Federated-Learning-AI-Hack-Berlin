@@ -9,7 +9,7 @@ scipy>=1.10.0
 pyyaml>=6.0
 
 # Federated Learning dependencies (for script/trial/)
-flwr>=1.5.0          # Flower framework for FL
+flwr        # Flower framework for FL
 torch>=2.0.0         # PyTorch for Convolutional Autoencoder
 torchvision>=0.15.0  # PyTorch vision utilities
 
