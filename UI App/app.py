@@ -32,25 +32,25 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for industrial theme
+# Custom CSS for Siemens-inspired theme
 st.markdown("""
 <style>
     .main-header {
         font-size: 2.5rem;
         font-weight: bold;
-        color: #1E3A8A;
+        color: #009999;
         text-align: center;
         padding: 1rem 0;
-        border-bottom: 3px solid #1E3A8A;
+        border-bottom: 3px solid #009999;
         margin-bottom: 2rem;
     }
     .kpi-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #009999 0%, #00B8B8 100%);
         padding: 1.5rem;
         border-radius: 10px;
         color: white;
         text-align: center;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 6px rgba(0, 153, 153, 0.2);
     }
     .kpi-value {
         font-size: 2.5rem;
@@ -96,6 +96,29 @@ st.markdown("""
         text-align: center;
         background-color: #F9FAFB;
     }
+    /* Siemens-style sidebar */
+    [data-testid="stSidebar"] {
+        background-color: #F5F5F5;
+    }
+    /* Siemens teal accents for buttons */
+    .stButton>button {
+        background-color: #009999;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-weight: 500;
+    }
+    .stButton>button:hover {
+        background-color: #007A7A;
+    }
+    /* Header styling */
+    h1, h2, h3 {
+        color: #333333;
+    }
+    /* Metric styling */
+    [data-testid="stMetricValue"] {
+        color: #009999;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -124,21 +147,21 @@ def create_gauge_chart(value, title, max_value=100):
         mode="gauge+number+delta",
         value=value,
         domain={'x': [0, 1], 'y': [0, 1]},
-        title={'text': title, 'font': {'size': 20}},
+        title={'text': title, 'font': {'size': 20, 'color': '#333333'}},
         delta={'reference': 80},
         gauge={
             'axis': {'range': [None, max_value], 'tickwidth': 1},
-            'bar': {'color': "darkblue"},
+            'bar': {'color': "#009999"},  # Siemens teal
             'bgcolor': "white",
             'borderwidth': 2,
-            'bordercolor': "gray",
+            'bordercolor': "#CCCCCC",
             'steps': [
-                {'range': [0, 50], 'color': '#FEE2E2'},
-                {'range': [50, 75], 'color': '#FEF3C7'},
-                {'range': [75, 100], 'color': '#D1FAE5'}
+                {'range': [0, 50], 'color': '#FFE5E5'},
+                {'range': [50, 75], 'color': '#FFF4E5'},
+                {'range': [75, 100], 'color': '#E5F9F9'}  # Light teal
             ],
             'threshold': {
-                'line': {'color': "red", 'width': 4},
+                'line': {'color': "#EF4444", 'width': 4},
                 'thickness': 0.75,
                 'value': 90
             }
@@ -157,43 +180,52 @@ def create_sensor_heatmap(data, sensors_to_show=20):
     # Normalize each sensor
     normalized_data = (recent_data - recent_data.mean()) / (recent_data.std() + 1e-8)
     
+    # Siemens-inspired color scale (white to teal)
     fig = px.imshow(
         normalized_data.T,
         labels=dict(x="Time Index", y="Sensor", color="Normalized Value"),
         aspect="auto",
-        color_continuous_scale="RdYlGn_r"
+        color_continuous_scale=["#EF4444", "#FFFFFF", "#009999"]  # Red-White-Teal
     )
     fig.update_layout(
-        title=f"Sensor Heatmap (Last 50 Readings)",
+        title=dict(text=f"Sensor Heatmap (Last 50 Readings)", font=dict(color='#333333')),
         height=400,
         xaxis_title="Recent Samples",
-        yaxis_title="Sensor ID"
+        yaxis_title="Sensor ID",
+        plot_bgcolor='#FAFAFA',
+        paper_bgcolor='white'
     )
     return fig
 
 def create_time_series_plot(data, sensors, title="Sensor Readings Over Time"):
     """Create multi-line time series plot"""
+    # Siemens color palette
+    siemens_colors = ['#009999', '#00B8B8', '#007A7A', '#006666', '#00D4D4', '#005555']
+    
     fig = go.Figure()
     
-    for sensor in sensors:
+    for i, sensor in enumerate(sensors):
         if sensor in data.columns:
             # Use last 500 points for performance
             plot_data = data.tail(500)
+            color = siemens_colors[i % len(siemens_colors)]
             fig.add_trace(go.Scatter(
                 x=plot_data.index,
                 y=plot_data[sensor],
                 mode='lines',
                 name=sensor,
-                line=dict(width=2)
+                line=dict(width=2, color=color)
             ))
     
     fig.update_layout(
-        title=title,
+        title=dict(text=title, font=dict(color='#333333')),
         xaxis_title="Sample Index",
         yaxis_title="Sensor Value",
         height=400,
         hovermode='x unified',
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        plot_bgcolor='#FAFAFA',
+        paper_bgcolor='white'
     )
     return fig
 
