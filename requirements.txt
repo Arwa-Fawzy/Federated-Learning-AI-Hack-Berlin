@@ -7,11 +7,5 @@ matplotlib>=3.7.0
 seaborn>=0.13.0
 scipy>=1.10.0
 
-# Optional: For YAML config
-pyyaml>=6.0
-
-# Optional: For federated learning (install separately)
-# flwr>=1.5.0  # Flower framework
-# tensorflow>=2.13.0  # TensorFlow Federated
-# torch>=2.0.0  # PyTorch for FL
-
+# Flower
+flwr
