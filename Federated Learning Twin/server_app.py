@@ -17,10 +17,11 @@ NUM_ROUNDS = 6
 
 def start_server():
     # FedAvg default: averages weights. We also accept client-reported threshold as a metric (not used by aggregator)
-    strategy = FedAvg(
+    strategy = FedProx(
         fraction_fit=1.0,
         min_fit_clients=NUM_CLIENTS,
-        min_available_clients=NUM_CLIENTS
+        min_available_clients=NUM_CLIENTS,
+        proximal_mu=0.01  # <-- required argument, you can tune this
     )
     print("[server] starting Flower server...")
     fl.server.start_server(server_address=SERVER_ADDRESS, config={"num_rounds": NUM_ROUNDS}, strategy=strategy)
@@ -67,3 +68,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
