@@ -35,6 +35,20 @@ st.set_page_config(
 # Custom CSS for Siemens-inspired theme
 st.markdown("""
 <style>
+    /* Force white background */
+    .main {
+        background-color: white;
+    }
+    .stApp {
+        background-color: white;
+    }
+    [data-testid="stAppViewContainer"] {
+        background-color: white;
+    }
+    [data-testid="stHeader"] {
+        background-color: white;
+    }
+    
     .main-header {
         font-size: 2.5rem;
         font-weight: bold;
@@ -43,6 +57,7 @@ st.markdown("""
         padding: 1rem 0;
         border-bottom: 3px solid #009999;
         margin-bottom: 2rem;
+        background-color: white;
     }
     .kpi-card {
         background: linear-gradient(135deg, #009999 0%, #00B8B8 100%);
@@ -98,7 +113,11 @@ st.markdown("""
     }
     /* Siemens-style sidebar */
     [data-testid="stSidebar"] {
-        background-color: #F5F5F5;
+        background-color: white;
+        border-right: 1px solid #E5E7EB;
+    }
+    [data-testid="stSidebarContent"] {
+        background-color: white;
     }
     /* Siemens teal accents for buttons */
     .stButton>button {
@@ -111,13 +130,77 @@ st.markdown("""
     .stButton>button:hover {
         background-color: #007A7A;
     }
-    /* Header styling */
+    /* Header styling - darker for visibility */
     h1, h2, h3 {
+        color: #1a1a1a !important;
+        font-weight: 600 !important;
+    }
+    /* Tab styling */
+    .stTabs [data-baseweb="tab-list"] {
+        background-color: white;
+    }
+    .stTabs [data-baseweb="tab"] {
         color: #333333;
+        font-weight: 500;
+    }
+    .stTabs [aria-selected="true"] {
+        color: #009999 !important;
+        border-bottom-color: #009999 !important;
     }
     /* Metric styling */
     [data-testid="stMetricValue"] {
-        color: #009999;
+        color: #009999 !important;
+        font-size: 2rem !important;
+        font-weight: 600 !important;
+    }
+    [data-testid="stMetricLabel"] {
+        color: #1a1a1a !important;
+        font-weight: 500 !important;
+    }
+    [data-testid="stMetricDelta"] {
+        font-weight: 500 !important;
+    }
+    /* Better text visibility */
+    .stMarkdown, p, span, div {
+        color: #1a1a1a;
+    }
+    /* Selectbox styling */
+    .stSelectbox label {
+        color: #1a1a1a !important;
+        font-weight: 500 !important;
+    }
+    .stSelectbox > div > div {
+        background-color: white;
+    }
+    .stSelectbox [data-baseweb="select"] > div {
+        background-color: white;
+        border-color: #009999;
+        color: #1a1a1a;
+        min-width: 100%;
+        width: 100%;
+    }
+    /* Make dropdown text fully visible */
+    .stSelectbox [data-baseweb="select"] > div > div {
+        color: #1a1a1a !important;
+        font-size: 14px !important;
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+    }
+    /* Dropdown menu items */
+    [data-baseweb="popover"] {
+        background-color: white !important;
+    }
+    [data-baseweb="menu"] {
+        background-color: white !important;
+    }
+    [role="option"] {
+        color: #1a1a1a !important;
+        background-color: white !important;
+        padding: 8px 12px !important;
+    }
+    [role="option"]:hover {
+        background-color: #E5F9F9 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -167,7 +250,12 @@ def create_gauge_chart(value, title, max_value=100):
             }
         }
     ))
-    fig.update_layout(height=250, margin=dict(l=20, r=20, t=50, b=20))
+    fig.update_layout(
+        height=250,
+        margin=dict(l=20, r=20, t=50, b=20),
+        paper_bgcolor='white',
+        font=dict(color='#1a1a1a', size=14)
+    )
     return fig
 
 def create_sensor_heatmap(data, sensors_to_show=20):
@@ -188,12 +276,13 @@ def create_sensor_heatmap(data, sensors_to_show=20):
         color_continuous_scale=["#EF4444", "#FFFFFF", "#009999"]  # Red-White-Teal
     )
     fig.update_layout(
-        title=dict(text=f"Sensor Heatmap (Last 50 Readings)", font=dict(color='#333333')),
+        title=dict(text=f"Sensor Heatmap (Last 50 Readings)", font=dict(color='#1a1a1a', size=16)),
         height=400,
         xaxis_title="Recent Samples",
         yaxis_title="Sensor ID",
-        plot_bgcolor='#FAFAFA',
-        paper_bgcolor='white'
+        plot_bgcolor='white',
+        paper_bgcolor='white',
+        font=dict(color='#1a1a1a')
     )
     return fig
 
@@ -218,14 +307,17 @@ def create_time_series_plot(data, sensors, title="Sensor Readings Over Time"):
             ))
     
     fig.update_layout(
-        title=dict(text=title, font=dict(color='#333333')),
+        title=dict(text=title, font=dict(color='#1a1a1a', size=16)),
         xaxis_title="Sample Index",
         yaxis_title="Sensor Value",
         height=400,
         hovermode='x unified',
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        plot_bgcolor='#FAFAFA',
-        paper_bgcolor='white'
+        plot_bgcolor='white',
+        paper_bgcolor='white',
+        font=dict(color='#1a1a1a'),
+        xaxis=dict(gridcolor='#E5E7EB'),
+        yaxis=dict(gridcolor='#E5E7EB')
     )
     return fig
 
@@ -247,10 +339,12 @@ def create_status_distribution(data):
     )])
     
     fig.update_layout(
-        title="Machine Status Distribution",
+        title=dict(text="Machine Status Distribution", font=dict(color='#1a1a1a', size=16)),
         height=300,
         showlegend=True,
-        legend=dict(orientation="h", yanchor="bottom", y=-0.2)
+        legend=dict(orientation="h", yanchor="bottom", y=-0.2),
+        paper_bgcolor='white',
+        font=dict(color='#1a1a1a')
     )
     return fig
 
@@ -273,10 +367,18 @@ def main():
         
         # Facility selector
         st.subheader("📍 Facility Selection")
-        facility_options = {
-            f"Facility {i} ({metadata['clients'][str(i)]['samples']:,} samples)": i 
-            for i in range(5)
-        }
+        
+        # Create shorter facility names
+        facility_options = {}
+        for i in range(5):
+            samples = metadata['clients'][str(i)]['samples']
+            # Format samples in K (thousands)
+            if samples >= 1000:
+                samples_str = f"{samples/1000:.1f}K"
+            else:
+                samples_str = str(samples)
+            facility_options[f"Facility {i} ({samples_str})"] = i
+        
         selected_facility_name = st.selectbox(
             "Select Facility:",
             options=list(facility_options.keys()),
