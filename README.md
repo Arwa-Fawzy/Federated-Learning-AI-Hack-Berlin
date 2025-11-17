@@ -5,7 +5,7 @@
 
 ---
 
-## 📊 About the Dataset
+## About the Dataset
 
 ### Dataset Overview
 
